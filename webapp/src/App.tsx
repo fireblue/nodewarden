@@ -611,14 +611,16 @@ export default function App() {
 
   async function enableTotpAction(secret: string, token: string) {
     if (!secret.trim() || !token.trim()) {
-      pushToast('error', t('txt_secret_and_code_are_required'));
-      return;
+      const error = new Error(t('txt_secret_and_code_are_required'));
+      pushToast('error', error.message);
+      throw error;
     }
     try {
       await setTotp(authedFetch, { enabled: true, secret: secret.trim(), token: token.trim() });
       pushToast('success', t('txt_totp_enabled'));
     } catch (error) {
       pushToast('error', error instanceof Error ? error.message : t('txt_enable_totp_failed'));
+      throw error;
     }
   }
 

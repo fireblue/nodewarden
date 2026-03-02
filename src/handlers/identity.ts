@@ -19,12 +19,9 @@ const TWO_FACTOR_PROVIDER_RECOVERY_CODE_RESPONSE = '-1';
 const TWO_FACTOR_PROVIDER_RECOVERY_CODE_LEGACY = 8;
 const TWO_FACTOR_PROVIDER_RECOVERY_CODE_ANDROID_REQUEST = 100;
 
-function resolveTotpSecret(userSecret: string | null, envSecret: string | undefined): string | null {
+function resolveTotpSecret(userSecret: string | null): string | null {
   if (userSecret && isTotpEnabled(userSecret)) {
     return userSecret;
-  }
-  if (isTotpEnabled(envSecret)) {
-    return envSecret!;
   }
   return null;
 }
@@ -155,9 +152,9 @@ export async function handleToken(request: Request, env: Env): Promise<Response>
       );
     }
 
-    // Optional 2FA: enabled per-user secret first, then falls back to global env secret for compatibility.
+    // Optional 2FA: enabled only by per-user secret.
     let trustedTwoFactorTokenToReturn: string | undefined;
-    const effectiveTotpSecret = resolveTotpSecret(user.totpSecret, env.TOTP_SECRET);
+    const effectiveTotpSecret = resolveTotpSecret(user.totpSecret);
     if (effectiveTotpSecret) {
       const canUseRecoveryCode = !!user.totpRecoveryCode;
       const normalizedTwoFactorProvider = String(twoFactorProvider ?? '').trim();
